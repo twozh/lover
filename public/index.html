@@ -1,0 +1,28 @@
+<!doctype html>
+<html ng-app="loverApp">
+<head>
+	<meta charset="utf-8">
+	<title>恋人 &bull; Lover</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="stylesheets/style.css">
+	<link rel="stylesheet" href="dist-bootstrap-3.0.0/css/bootstrap.min.css">
+</head>
+
+<body class='container'>
+	<nav class="navbar navbar-default" role="navigation">
+	    <a class="navbar-brand" href="#">恋人 &bull; Lover</a>
+	  	<p class="navbar-text">你我之间，分享爱恋！</p>
+	    <p class="navbar-text pull-right"> <span class="glyphicon glyphicon-cog"></span>
+	    	<a href="{{rootActionLink}}" class="navbar-link"> {{rootActionText}}</a>
+	    </p>
+	</nav>
+
+	<div ng-view></div>
+
+
+	<script src="angular-1.2.0-rc.3/angular.js"></script>
+	<script src="angular-1.2.0-rc.3/angular-route.js"></script>
+	<script src="javascripts/an-controllers.js"></script>
+	<script src="javascripts/an-routes.js"></script>
+</body>
+</html>

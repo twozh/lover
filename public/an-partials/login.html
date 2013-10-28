@@ -1,0 +1,24 @@
+<form class="form-horizontal" role="form" name='loginForm'>
+  <div class="form-group" ng-class="{'has-error': loginForm.name.$invalid}">
+    <label for="inputEmail1" class="col-lg-2 control-label">Username</label>
+    <div class="col-lg-10">
+      <input name='name' type="text" class="form-control" id="inputEmail1" placeholder="Username"
+      ng-model='username' required ng-click="postRsp = ''">
+      <span ng-show="loginForm.name.$error.required" class="help-block">Required</span>
+    </div>
+  </div>
+  <div class="form-group" ng-class="{'has-error': loginForm.passwd.$invalid}">
+    <label for="inputPassword1" class="col-lg-2 control-label">Password</label>
+    <div class="col-lg-10">
+      <input name='passwd' type="password" class="form-control" id="inputPassword1" placeholder="Password" ng-model='password' required ng-click="postRsp = ''">
+      <span ng-show="loginForm.passwd.$error.required" class="help-block">Required</span>
+      <span class="help-block">{{postRsp}}</span>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-lg-offset-2 col-lg-10">
+      <button type="submit" class="btn btn-default" ng-click='postLogin(username, password)'
+      ng-disabled='loginForm.$invalid'>Sign in</button>
+    </div>
+  </div>
+</form>
