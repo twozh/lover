@@ -1,11 +1,19 @@
 "use strict";
 
-/* Controllers */
-
 Date.prototype.toString = function(){
-	return this.getFullYear()+'年'+(this.getMonth()+1)+'月'+
-		this.getDate()+'日 '+this.getHours()+':'+this.getMinutes();
+  return this.getFullYear()+'年'+(this.getMonth()+1)+'月'+
+    this.getDate()+'日 '+this.getHours()+':'+this.getMinutes();
+ };
+
+Array.prototype.delById = function(id){
+  for (var i=0; i < this.length; i++){
+    if (id === this[i]._id){
+      this.splice(i, 1);
+    }
+  }
 };
+
+/* Controllers */
 
 var loverControllers = angular.module('loverControllers', []);
 
@@ -14,72 +22,58 @@ loverControllers.controller('loverMsgCtrl', ['$scope', '$location', '$rootScope'
 
 	$rootScope.rootActionText = "退出";
 	$rootScope.rootActionLink = '';
-/*
-	//$scope.user_id;
-	//$scope.userName
+
+  //check if user had logged in
   $http.post('/getloginuser').success(function(data, status, headers, config) {
-    $scope.user_id  = data.user_id;
-    $scope.userName = data.userName;
-	}).error(function(data, status, headers, config){
-		alert(res.data);
-		$location.path('/login');
+    if (data.code === true){
+      $scope.user_id  = data.data._id;
+      $scope.userName = data.data.name;
+    } else {
+      $location.path('/login');
+    }
 	});
 
+  //get msg list first time
+  $http.get('/msgs').success(function(ret){
+    $scope.msgList = ret.data;
+  });
 
-	$scope.msg_list = LoverMsg.query(function(){
-		var da;
-		for (var i = 0; i < $scope.msg_list.length; i++){
-			da = new Date($scope.msg_list[i].time);
-      //$scope.msg_list[i].timeString = da.toString();
-		}
-	}, function(res){
-		alert(res.data.error);
-		$location.path('/login');
+	$scope.createMsg = function(inText) {
+    var postText     = {};
+    postText.message = inText;
+    postText.user_id = $scope.user_id;
 
-	});
-
-	$scope.createMsg = function() {
-		var msg = new LoverMsg();
-		msg.message = $scope.inText;
-		msg.time = new Date();
-		msg.user_id = $scope.user_id;
-		msg.$save({}, {}, function(res){
-      alert(res.data.message);
+    $http.post('/msgs', postText).success(function(data, status, headers, config) {
+      $scope.msgList.unshift(data.data);
     });
+  };
 
-		msg.timeString = msg.time.toString();
-		//alert(msg.timeString);
-      $scope.msg_list.unshift(msg);
-    };
+  $scope.delMsg = function(msg){
+    $http.delete('/msgs/' + msg._id).success(function(ret){
+      $scope.msgList.delById(msg._id);
+    });
+  };
 
-    $scope.delMsg = function(msg) {
-      msg.$delete();
-      $scope.msg_list.pop();
-    };
-*/
 }]);
 
 loverControllers.controller('loverLoginCtrl', ['$scope', '$http', '$location', '$rootScope',
 function($scope, $http, $location, $rootScope){
 
 	$rootScope.rootActionText = "注册";
-	$rootScope.rootActionLink = '#/register';
-/*
+	$rootScope.rootActionLink = '#/signup';
+
 	$scope.postLogin = function(username, password){
-		var postData = {username: username, password: password};
+		var postData = {name: username, password: password};
 		$http.post('/login', postData).success(function(data, status, headers, config) {
 			$rootScope.rootUsername = username;
-        $location.path('/main');
-      }).error(function(data, status, headers, config){
-        $scope.postRsp = data.error;
-        //$location.path('/app');
-      });
+      $location.path('/main');
+    });
 	};
-*/
+
 }]);
 
-loverControllers.controller('loverRegisterCtrl', ['$scope', '$http', '$rootScope',
-function($scope, $http, $rootScope){
+loverControllers.controller('loverRegisterCtrl', ['$scope', '$http', '$rootScope', '$location',
+function($scope, $http, $rootScope, $location){
 
 	$rootScope.rootActionText = "登录";
 	$rootScope.rootActionLink = '#/login';
@@ -88,8 +82,7 @@ function($scope, $http, $rootScope){
 		var dataPost = {username: username, password: password};
 		$http.post('/register', dataPost).success(function(data, status, headers, config) {
       if (data.code === true){
-        //$location.path('/main');
-        $scope.postRsp = "register success";
+        $location.path('/login');
       }
       else{
         $scope.postRsp = data.data;
@@ -98,11 +91,11 @@ function($scope, $http, $rootScope){
 	};
 }]);
 
-loverControllers.controller('loverIndexCtrl', ['$scope', '$http', '$rootScope', function($scope, $http, $rootScope){
+loverControllers.controller('loverIndexCtrl', ['$scope', '$http', '$rootScope',
+function($scope, $http, $rootScope){
 
 	$rootScope.rootActionText = "登录";
 	$rootScope.rootActionLink = '#/login';
-
 }]);
 
 

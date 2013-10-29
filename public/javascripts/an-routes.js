@@ -4,7 +4,7 @@ var loverApp = angular.module('loverApp', [
   'ngRoute',
   'loverControllers',
 ]);
- 
+
 loverApp.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
@@ -20,7 +20,7 @@ loverApp.config(['$routeProvider',
         templateUrl: 'an-partials/login.html',
         controller: 'loverLoginCtrl'
       }).
-      when('/register', {
+      when('/signup', {
         templateUrl: 'an-partials/register.html',
         controller: 'loverRegisterCtrl'
       }).

@@ -25,8 +25,8 @@ exports.loginCtrl = function(req, res){
 		}
 
 		req.session.user_id = user._id;
-    GRETURN.code = false;
-    delete GRETURN.data;
+    GRETURN.code = true;
+    GRETURN.data = "login success.";
 		res.send(GRETURN);
 	});
 };
@@ -84,25 +84,27 @@ exports.verifySession = function(req, res, next){
     //res.redirect('/login');
   }
 };
-
+*/
 
 exports.getLoginUser = function(req, res){
 	var user_id = req.session.user_id;
-	var obj = {};
 
 	if (user_id) {
-		var user = UserDB.findById(user_id, function(err, user){
+		UserDB.findById(user_id, function(err, user){
 			if (err) console.log(err);
 
-			obj.user_id = user_id;
-			obj.userName = user.name;
+      GRETURN.code      = true;
+      GRETURN.data      = {};
+      GRETURN.data.name = user.name;
+      GRETURN.data._id  = user._id;
 
-			res.send(obj);
+			res.send(GRETURN);
 		});
-    } else {
-      console.log('session is null');
-      res.send(500, { error: 'cao, you are not login'});
-    }
+  } else {
+    delete GRETURN.data;
+    GRETURN.code = false;
+    res.send(GRETURN);
+  }
 };
 
-*/
+

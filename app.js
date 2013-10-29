@@ -44,7 +44,7 @@ app.delete('/msgs/:id', model.MsgDelete);
 // auth
 app.post('/login', auth.loginCtrl);
 app.post('/register', auth.registerCtrl);
-//app.post('/getloginuser', auth.getLoginUser);
+app.post('/getloginuser', auth.getLoginUser);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
