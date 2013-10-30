@@ -3,6 +3,7 @@
 var loverApp = angular.module('loverApp', [
   'ngRoute',
   'loverControllers',
+  'loverFilters',
 ]);
 
 loverApp.config(['$routeProvider',
@@ -19,6 +20,10 @@ loverApp.config(['$routeProvider',
       when('/login', {
         templateUrl: 'an-partials/login.html',
         controller: 'loverLoginCtrl'
+      }).
+      when('/logout', {
+        templateUrl: 'an-partials/idx.html',
+        controller: 'loverLogoutCtrl',
       }).
       when('/signup', {
         templateUrl: 'an-partials/register.html',

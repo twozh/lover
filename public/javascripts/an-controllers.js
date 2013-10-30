@@ -1,10 +1,5 @@
 "use strict";
 
-Date.prototype.toString = function(){
-  return this.getFullYear()+'年'+(this.getMonth()+1)+'月'+
-    this.getDate()+'日 '+this.getHours()+':'+this.getMinutes();
- };
-
 Array.prototype.delById = function(id){
   for (var i=0; i < this.length; i++){
     if (id === this[i]._id){
@@ -21,9 +16,9 @@ loverControllers.controller('loverMsgCtrl', ['$scope', '$location', '$rootScope'
 	function($scope, $location, $rootScope, $http){
 
 	$rootScope.rootActionText = "退出";
-	$rootScope.rootActionLink = '';
+	$rootScope.rootActionLink = '#/logout';
 
-  //check if user had logged in
+  //check if user has logged in
   $http.post('/getloginuser').success(function(data, status, headers, config) {
     if (data.code === true){
       $scope.user_id  = data.data._id;
@@ -44,11 +39,23 @@ loverControllers.controller('loverMsgCtrl', ['$scope', '$location', '$rootScope'
     postText.user_id = $scope.user_id;
 
     $http.post('/msgs', postText).success(function(data, status, headers, config) {
+      var idTmp = data.data.user_id;
+      data.data.user_id = {};
+      data.data.user_id.name = $scope.userName;
+      data.data.user_id._id = idTmp;
       $scope.msgList.unshift(data.data);
+
+      //clear input textarea
+      $scope.inText = '';
     });
   };
 
   $scope.delMsg = function(msg){
+    //if msg's user is not the current logged in one, then return
+    if ($scope.user_id !== msg.user_id._id){
+      return;
+    }
+
     $http.delete('/msgs/' + msg._id).success(function(ret){
       $scope.msgList.delById(msg._id);
     });
@@ -65,11 +72,22 @@ function($scope, $http, $location, $rootScope){
 	$scope.postLogin = function(username, password){
 		var postData = {name: username, password: password};
 		$http.post('/login', postData).success(function(data, status, headers, config) {
-			$rootScope.rootUsername = username;
-      $location.path('/main');
+      if (data.code === true){
+        $location.path('/main');
+      } else {
+        $scope.postRsp = data.data;
+      }
     });
 	};
+}]);
 
+loverControllers.controller('loverLogoutCtrl', ['$http', '$location', function($http, $location){
+  $http.post('/logout').success(function(data, status, headers, config) {
+    if (true === data.code){
+      //alert("welcom next time.");
+      $location.path('/');
+    }
+  });
 }]);
 
 loverControllers.controller('loverRegisterCtrl', ['$scope', '$http', '$rootScope', '$location',

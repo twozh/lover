@@ -21,10 +21,10 @@
 
 		<div ng-repeat="msg in msgList">
     		<div class="row" ng-dblclick="delMsg(msg)">
-		      <div class="col-md-1">{{userName}}:</div>
+		      <div class="col-md-1">{{msg.user_id.name}}:</div>
 		      <div class="col-md-11">
 		        <p>{{msg.message}}</p>
-		        {{msg.timeString}}
+		        {{msg.time | msgTime}}
 		      </div>
 		    </div>
 	    <br>

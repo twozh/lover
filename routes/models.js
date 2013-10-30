@@ -30,13 +30,17 @@ exports.User = User;
 var GRETURN = {};
 
 exports.MsgFindAll = function(req, res){
-  Msg.find(function(err, msgs){
-    if (err) console.log(err);
+  Msg.find()
+    .sort('-time')
+    .populate('user_id', 'name')
+    .exec(function(err, msgs){
+      if (err) console.log(err);
 
-    GRETURN.code = true;
-    GRETURN.data = msgs;
-    res.send(GRETURN);
-  });
+      GRETURN.code = true;
+      GRETURN.data = msgs;
+
+      res.send(GRETURN);
+    });
 };
 
 exports.MsgFindById = function(req, res){
@@ -58,6 +62,8 @@ exports.MsgAdd = function(req, res){
   var msg = Msg(reqMsg);
   msg.save(function(err, msg){
     if (err) console.log(err);
+      //Msg.findById(msg._id)
+      //  .populate(user_id)
 
     GRETURN.code = true;
     GRETURN.data = msg;

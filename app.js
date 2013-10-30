@@ -43,6 +43,7 @@ app.delete('/msgs/:id', model.MsgDelete);
 
 // auth
 app.post('/login', auth.loginCtrl);
+app.post('/logout', auth.logoutCtrl);
 app.post('/register', auth.registerCtrl);
 app.post('/getloginuser', auth.getLoginUser);
 

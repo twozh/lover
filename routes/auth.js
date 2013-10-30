@@ -19,7 +19,7 @@ exports.loginCtrl = function(req, res){
 
 		if (!user){
       GRETURN.code = false;
-      GRETURN.data = "user or passwd do not exist.";
+      GRETURN.data = "user or passwd does not exist.";
 			res.send(GRETURN);
 			return;
 		}
@@ -31,8 +31,13 @@ exports.loginCtrl = function(req, res){
 	});
 };
 
-exports.logoutCtrl = function(){
+exports.logoutCtrl = function(req, res){
+  delete req.session.user_id;
+  console.log("log out");
 
+  GRETURN.code = true;
+  delete GRETURN.data;
+  res.send(GRETURN);
 };
 
 exports.registerCtrl = function(req, res){

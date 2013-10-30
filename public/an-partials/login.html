@@ -1,9 +1,9 @@
 <form class="form-horizontal" role="form" name='loginForm'>
   <div class="form-group" ng-class="{'has-error': loginForm.name.$invalid}">
-    <label for="inputEmail1" class="col-lg-2 control-label">Username</label>
+    <label for="input1" class="col-lg-2 control-label">Username</label>
     <div class="col-lg-10">
-      <input name='name' type="text" class="form-control" id="inputEmail1" placeholder="Username"
-      ng-model='username' required ng-click="postRsp = ''">
+      <input name='name' type="text" class="form-control" id="input1" placeholder="Username"
+      ng-model='username' required ng-click="postRsp = ''"  autofocus="autofocus">
       <span ng-show="loginForm.name.$error.required" class="help-block">Required</span>
     </div>
   </div>
