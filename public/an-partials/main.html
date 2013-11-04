@@ -17,18 +17,16 @@
 				ng-click="createMsg(inText)">Send</button>
 			</div>
 		</form>
-		<hr>
 
-		<div ng-repeat="msg in msgList">
-    		<div class="row" ng-dblclick="delMsg(msg)">
-		      <div class="col-md-1">{{msg.user_id.name}}:</div>
-		      <div class="col-md-11">
-		        <p>{{msg.message}}</p>
-		        {{msg.time | msgTime}}
-		      </div>
-		    </div>
-	    <br>
-	    </div>
+		<div class="msg-all" ng-repeat="msg in msgList">
+			<img width="35" height="35" src="images/photo5050.jpg" class="msg-img">
+			<div class="msg-body" ng-dblclick="delMsg(msg)">
+				<strong class="msg-user">{{msg.user_id.name}}</strong>
+				<p class="msg-text">{{msg.message}}</p>
+				<div class="msg-footer">{{msg.time | msgTime}}</div>
+			</div>
+		</div>
+
 
 	</div>
 </div>
