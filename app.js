@@ -9,7 +9,6 @@ var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
 var model = require('./routes/models');
-var auth = require('./routes/auth')
 
 var app = express();
 
@@ -34,18 +33,21 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.get('/users', user.list);
 
-// msg resource
+// msg
 app.get('/msgs', model.MsgFindAll);
 app.get('/msgs/:id', model.MsgFindById);
 app.post('/msgs', model.MsgAdd);
 app.put('/msgs/:id', model.MsgPut);
 app.delete('/msgs/:id', model.MsgDelete);
 
-// auth
-app.post('/login', auth.loginCtrl);
-app.post('/logout', auth.logoutCtrl);
-app.post('/register', auth.registerCtrl);
-app.post('/getloginuser', auth.getLoginUser);
+// user
+app.post('/login', model.loginCtrl);
+app.post('/logout', model.logoutCtrl);
+app.post('/register', model.registerCtrl);
+app.post('/getloginuser', model.getLoginUser);
+
+// other
+app.post('/app', model.appHandler);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

@@ -1,0 +1,15 @@
+前后端交互说明：
+
+var GRETURN = {
+    code: CODE,
+    data: DATA,
+};
+
+CODE参考：
+
+NOT-LOGIN, 用户未登录，
+NO-RELATION，用户未添加情侣，
+ADDING, 用户添加情侣中，等待对方同意
+IN-RELATION，用户已经添加情侣
+
+

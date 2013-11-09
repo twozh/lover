@@ -8,29 +8,38 @@ Array.prototype.delById = function(id){
   }
 };
 
-/* Controllers */
-
+/*
+  the controllsers
+ */
 var loverControllers = angular.module('loverControllers', []);
 
+/*
+  main.html control
+ */
 loverControllers.controller('loverMsgCtrl', ['$scope', '$location', '$rootScope', '$http',
-	function($scope, $location, $rootScope, $http){
+function($scope, $location, $rootScope, $http){
 
 	$rootScope.rootActionText = "退出";
 	$rootScope.rootActionLink = '#/logout';
 
-  //check if user has logged in
-  $http.post('/getloginuser').success(function(data, status, headers, config) {
-    if (data.code === true){
-      $scope.user_id  = data.data._id;
-      $scope.userName = data.data.name;
-    } else {
-      $location.path('/login');
-    }
-	});
+  $scope.isNoRelation = false;
+  $scope.isAdding = false;
+  $scope.isInRelation = false;
 
-  //get msg list first time
   $http.get('/msgs').success(function(ret){
-    $scope.msgList = ret.data;
+    alert(ret.code);
+
+    if (ret.code === "NOT-LOGIN"){
+      $location.path('/login');
+    } else if (ret.code === "NO-RELATION"){
+      $scope.isNoRelation = true;
+    } else if (ret.code === "ADDING"){
+      $scope.isAdding = true;
+    } else {
+      $scope.isInRelation = true;
+    }
+
+
   });
 
 	$scope.createMsg = function(inText) {
@@ -61,8 +70,25 @@ loverControllers.controller('loverMsgCtrl', ['$scope', '$location', '$rootScope'
     });
   };
 
+  $scope.findTheOne = function(name){
+    var postObj = {};
+    postObj.code = "SEARCH-THE-ONE";
+    postObj.data = name;
+    $http.post('/app', postObj).success(function(data, status, headers, config) {
+      $scope.addResult = data.code;
+
+      if (data.code === "NO-RELATION"){
+        $scope.showAddButton = true;
+      }
+
+    });
+  };
+
 }]);
 
+/*
+  login.html control
+ */
 loverControllers.controller('loverLoginCtrl', ['$scope', '$http', '$location', '$rootScope',
 function($scope, $http, $location, $rootScope){
 
@@ -81,6 +107,9 @@ function($scope, $http, $location, $rootScope){
 	};
 }]);
 
+/*
+  logout control
+ */
 loverControllers.controller('loverLogoutCtrl', ['$http', '$location', function($http, $location){
   $http.post('/logout').success(function(data, status, headers, config) {
     if (true === data.code){
@@ -90,6 +119,9 @@ loverControllers.controller('loverLogoutCtrl', ['$http', '$location', function($
   });
 }]);
 
+/*
+  register.html control
+ */
 loverControllers.controller('loverRegisterCtrl', ['$scope', '$http', '$rootScope', '$location',
 function($scope, $http, $rootScope, $location){
 
@@ -109,6 +141,9 @@ function($scope, $http, $rootScope, $location){
 	};
 }]);
 
+/*
+  idx.html control
+ */
 loverControllers.controller('loverIndexCtrl', ['$scope', '$http', '$rootScope',
 function($scope, $http, $rootScope){
 
