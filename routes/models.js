@@ -13,11 +13,14 @@ var Msg = mongoose.model('Msg', mongoose.Schema({
 }));
 
 var User = mongoose.model('User', mongoose.Schema({
+  //basic info
   name: {type: String, required: true},
   password: {type: String, required: true},
   email: String,
-  inRelation: {type: String, required:true, default: "NO-RELATION"}, //NO-RELATION, ADDING, IN-RELATION
 
+  //control info
+  inRelation: {type: String, required:true, default: "NO-RELATION"}, //NO-RELATION, ADDING, IN-RELATION
+  addingName: String,
   relation: {type: ObjectId, ref: 'Relation'},
   request: [{type: String}],
 }));
@@ -40,22 +43,20 @@ var checkSession = function(req, res, succCb){
     User.findById(user_id, function(err, user){
       if (err) console.log(err);
 
-      if (!user) {
+      if (user){
+        succCb(user);
+        return;
+      } else {
         delete GRETURN.data;
         GRETURN.code = "NOT-LOGIN";
         res.send(GRETURN);
-        return;
       }
-
-      succCb(user);
     });
   } else {
     delete GRETURN.data;
-    GRETURN.code = "NOT LOGIN";
-
+    GRETURN.code = "NOT-LOGIN";
     res.send(GRETURN);
   }
-
 };
 
 exports.MsgFindAll = function(req, res){
@@ -63,8 +64,19 @@ exports.MsgFindAll = function(req, res){
   checkSession(req, res, function(user){
     if (user.inRelation === "NO-RELATION"){
       GRETURN.code = "NO-RELATION";
+      GRETURN.data = [];
+
+      //deep copy the request
+      for (var i = 0; i < user.request.length; i++){
+        GRETURN.data.push(user.request[i]);
+      }
+
+      user.request = [];
+      user.save();
+
     } else if (user.inRelation  === "ADDING"){
       GRETURN.code = "ADDING";
+      GRETURN.data = user.addingName;
     }
     else {
       GRETURN.code = "IN-RELATION";
@@ -233,21 +245,71 @@ exports.getLoginUser = function(req, res){
 exports.appHandler = function(req, res){
   var reqData = req.body;
 
-  if (reqData.code === "ADD"){
+  switch (reqData.code){
+    case "SEARCH-THE-ONE":
+      User.findOne({name: reqData.data}, function(err, user){
+        if (err) console.log(err);
 
-    User.findOne({name: reqData.data}, function(err, user){
-      if (err) console.log(err);
+        if (user){
+          GRETURN.code = user.inRelation;
+        } else {
+          GRETURN.code = "NO-USER";
+        }
 
-      if (user){
-        GRETURN.code = user.inRelation;
-      } else {
-        GRETURN.code = "NO-USER";
-      }
+        delete GRETURN.data;
+        res.send(GRETURN);
+      });
+      break;
 
-      delete GRETURN.data;
-      res.send(GRETURN);
-      return;
-    });
+    case "ADD-THE-ONE":
+      console.log("reciever: " + reqData.data.reciever);
+      console.log("initiator: " + reqData.data.initiator);
+      User.findOne({name: reqData.data.reciever}, function(err, user){
+        if (err) console.log(err);
+
+        user.request.push(reqData.data.initiator);
+        user.save();
+      });
+
+      User.findOne({name: reqData.data.initiator}, function(err, user){
+        if (err) console.log(err);
+
+        user.inRelation = "ADDING";
+        user.addingName = reqData.data.reciever;
+        user.save();
+        GRETURN.code = true;
+        res.send(GRETURN);
+      });
+      break;
+
+    case "AGREE-THE-ONE":
+      User.findOne({name: reqData.data.reciever}, function(err, userR){
+        User.findOne({name: reqData.data.initiator}, function(err, userI){
+          userR.inRelation = "IN-RELATION";
+          userR.relation = userI._id;
+          userR.save();
+
+          userI.inRelation = "IN-RELATION";
+          userI.relation = userR._id;
+          userI.save();
+
+          GRETURN.code = true;
+          res.send(GRETURN);
+        });
+      });
+      break;
+
+    case "CANCEL-ADD":
+      User.findById(req.session.user_id, function(err, user){
+        if (err) console.log(err);
+
+        user.inRelation = "NO-RELATION";
+        user.save();
+
+        GRETURN.code = true;
+        res.send(GRETURN);
+      });
+      break;
   }
 
 };

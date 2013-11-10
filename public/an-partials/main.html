@@ -10,21 +10,30 @@
 	<div class="col-md-10">
 		<div ng-show="isNoRelation">
 			<div class="form-group" >
+				<p>You have {{msgNum}} request.</p>
+				<div ng-repeat="req in reqList">
+					<p>{{req}}</p>
+					<button type="button" class="btn btn-default btn-primary"
+					ng-click="agreeTheOne(req)">Agree</button>
+				</div>
+
 				<p>You havn't add the one.</p>
 				<p>Please input the one's name:</p>
 	      <input type="text" name='name' class="form-control"
-	      ng-model='theOneName' ng-click="" autofocus required>
+	      ng-model='theOneName' autofocus required>
 	      <span class="help-block">{{addResult}}</span>
 	    </div>
 	    <div class="form-group">
-	    	<button type="button" class="btn btn-default btn-primary" ng-click="findTheOne(theOneName)">
+	    	<button type="submit" class="btn btn-default btn-primary" ng-click="findTheOne(theOneName)">
 	    	Search</button>
+	    	<button type="button" class="btn btn-default btn-primary" ng-click="addTheOne()"
+	    	ng-disabled="disableAddButton">Add</button>
 	    </div>
 		</div>
 
 		<div ng-show="isAdding">
-			<p>You are adding {{}}, wait her/his approval.</p>
-			<button type="button" class="btn btn-default btn-primary">
+			<p>You are adding {{addingName}}, wait her/his approval.</p>
+			<button type="button" class="btn btn-default btn-primary" ng-click="cancelAdd()">
 			Cancel</button>
 		</div>
 

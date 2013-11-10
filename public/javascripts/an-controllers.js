@@ -25,6 +25,7 @@ function($scope, $location, $rootScope, $http){
   $scope.isNoRelation = false;
   $scope.isAdding = false;
   $scope.isInRelation = false;
+  $scope.disableAddButton = true;
 
   $http.get('/msgs').success(function(ret){
     alert(ret.code);
@@ -33,13 +34,18 @@ function($scope, $location, $rootScope, $http){
       $location.path('/login');
     } else if (ret.code === "NO-RELATION"){
       $scope.isNoRelation = true;
+
+      if (ret.data.length !== 0){
+        $scope.msgNum = ret.data.length;
+        $scope.reqList = ret.data;
+      }
+
     } else if (ret.code === "ADDING"){
       $scope.isAdding = true;
+      $scope.addingName = ret.data;
     } else {
       $scope.isInRelation = true;
     }
-
-
   });
 
 	$scope.createMsg = function(inText) {
@@ -76,13 +82,51 @@ function($scope, $location, $rootScope, $http){
     postObj.data = name;
     $http.post('/app', postObj).success(function(data, status, headers, config) {
       $scope.addResult = data.code;
-
+      $scope.disableAddButton = true;
       if (data.code === "NO-RELATION"){
-        $scope.showAddButton = true;
+        $scope.disableAddButton = false;
+        $scope.theOneName = name;
       }
+    });
+  };
+
+  $scope.addTheOne = function(){
+    var postObj = {};
+    postObj.code = "ADD-THE-ONE";
+    postObj.data = {};
+    postObj.data.initiator = $rootScope.userName;
+    postObj.data.reciever = $scope.theOneName;
+
+    $http.post('/app', postObj).success(function(data, status, headers, config) {
 
     });
   };
+
+  $scope.agreeTheOne = function(name){
+    var postObj = {};
+    postObj.code = "AGREE-THE-ONE";
+    postObj.data = {};
+    postObj.data.initiator = name;
+    postObj.data.reciever = $rootScope.userName;
+    $http.post('/app', postObj).success(function(data, status, headers, config) {
+      if (data.code === true){
+        alert("add the one succ!");
+      }
+    });
+  };
+
+  $scope.cancelAdd = function(){
+    var postObj = {};
+    postObj.code = "CANCEL-ADD";
+    $http.post('/app', postObj).success(function(data, status, headers, config) {
+      if (data.code === true){
+        $scope.isNoRelation = true;
+        $scope.isAdding = false;
+        $scope.isInRelation = false;
+      }
+    });
+  };
+
 
 }]);
 
@@ -99,6 +143,7 @@ function($scope, $http, $location, $rootScope){
 		var postData = {name: username, password: password};
 		$http.post('/login', postData).success(function(data, status, headers, config) {
       if (data.code === true){
+        $rootScope.userName = username;
         $location.path('/main');
       } else {
         $scope.postRsp = data.data;
