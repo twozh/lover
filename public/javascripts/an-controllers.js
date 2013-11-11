@@ -102,17 +102,22 @@ function($scope, $location, $rootScope, $http){
     });
   };
 
-  $scope.agreeTheOne = function(name){
+  $scope.agreeTheOne = function(req){
     var postObj = {};
-    postObj.code = "AGREE-THE-ONE";
-    postObj.data = {};
-    postObj.data.initiator = name;
-    postObj.data.reciever = $rootScope.userName;
-    $http.post('/app', postObj).success(function(data, status, headers, config) {
-      if (data.code === true){
-        alert("add the one succ!");
-      }
-    });
+
+    if (req.code === "ADD-THE-ONE"){
+      postObj.code = "AGREE-THE-ONE";
+      postObj.data = {};
+      postObj.data.initiator = name;
+      postObj.data.reciever = $rootScope.userName;
+      $http.post('/app', postObj).success(function(data, status, headers, config) {
+        if (data.code === true){
+          alert("add the one succ!");
+        }
+      });
+    }
+
+
   };
 
   $scope.cancelAdd = function(){

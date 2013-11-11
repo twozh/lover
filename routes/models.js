@@ -22,7 +22,7 @@ var User = mongoose.model('User', mongoose.Schema({
   inRelation: {type: String, required:true, default: "NO-RELATION"}, //NO-RELATION, ADDING, IN-RELATION
   addingName: String,
   relation: {type: ObjectId, ref: 'Relation'},
-  request: [{type: String}],
+  request: [{}],
 }));
 
 var Relation = mongoose.model("Relation", mongoose.Schema({
@@ -72,6 +72,7 @@ exports.MsgFindAll = function(req, res){
       }
 
       user.request = [];
+      user.markModified('request');
       user.save();
 
     } else if (user.inRelation  === "ADDING"){
@@ -267,7 +268,11 @@ exports.appHandler = function(req, res){
       User.findOne({name: reqData.data.reciever}, function(err, user){
         if (err) console.log(err);
 
+        var t = {};
+        t.code = "ADD-THE-ONE";
+        t.data = reqData.data.initiator;
         user.request.push(reqData.data.initiator);
+        user.markModified('request');
         user.save();
       });
 
@@ -303,7 +308,19 @@ exports.appHandler = function(req, res){
       User.findById(req.session.user_id, function(err, user){
         if (err) console.log(err);
 
+        User.findOne({name: user.addingName}, function(err, userR){
+          for (var i = 0; i < userR.request.length; i++){
+            if (userR.request[i].code === "ADD-THE-ONE" &&
+                userR.request[i].data === user.name){
+              userR.request.splice(i, 1);
+            }
+          }
+
+          userR.save();
+        });
+
         user.inRelation = "NO-RELATION";
+        user.addingName = "";
         user.save();
 
         GRETURN.code = true;

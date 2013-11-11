@@ -8,13 +8,15 @@
 	</div>
 
 	<div class="col-md-10">
+
 		<div ng-show="isNoRelation">
+
 			<div class="form-group" >
 				<p>You have {{msgNum}} request.</p>
 				<div ng-repeat="req in reqList">
-					<p>{{req}}</p>
+					<p>{{req.code}}, {{req.data}}</p>
 					<button type="button" class="btn btn-default btn-primary"
-					ng-click="agreeTheOne(req)">Agree</button>
+					ng-click="agreeTheOne(req)">Enter</button>
 				</div>
 
 				<p>You havn't add the one.</p>
@@ -32,29 +34,35 @@
 		</div>
 
 		<div ng-show="isAdding">
+
 			<p>You are adding {{addingName}}, wait her/his approval.</p>
 			<button type="button" class="btn btn-default btn-primary" ng-click="cancelAdd()">
 			Cancel</button>
 		</div>
 
-		<form name="msgForm" ng-show="isInRelation">
-			<div class="form-group">
-				<textarea class="form-control" rows="3" ng-model='inText' placeholder="Say to your lover..." required>
-				</textarea>
-			</div>
-			<div class="form-group">
-				<button ng-disabled="msgForm.$invalid" type="button" class="btn btn-default"
-				ng-click="createMsg(inText)">Send</button>
-			</div>
-		</form>
+		<div ng-show="isInRelation">
 
-		<div class="msg-all" ng-repeat="msg in msgList">
-			<img width="35" height="35" src="images/photo5050.jpg" class="msg-img">
-			<div class="msg-body" ng-dblclick="delMsg(msg)">
-				<strong class="msg-user">{{msg.user_id.name}}</strong>
-				<p class="msg-text">{{msg.message}}</p>
-				<div class="msg-footer">{{msg.time | msgTime}}</div>
+			<form name="msgForm">
+				<div class="form-group">
+					<textarea class="form-control" rows="3" ng-model='inText' placeholder="Say to your lover..." required>
+					</textarea>
+				</div>
+				<div class="form-group">
+					<button ng-disabled="msgForm.$invalid" type="button" class="btn btn-default"
+					ng-click="createMsg(inText)">Send</button>
+				</div>
+			</form>
+
+
+			<div class="msg-all" ng-repeat="msg in msgList">
+				<img width="35" height="35" src="images/photo5050.jpg" class="msg-img">
+				<div class="msg-body" ng-dblclick="delMsg(msg)">
+					<strong class="msg-user">{{msg.user_id.name}}</strong>
+					<p class="msg-text">{{msg.message}}</p>
+					<div class="msg-footer">{{msg.time | msgTime}}</div>
+				</div>
 			</div>
+
 		</div>
 
 
