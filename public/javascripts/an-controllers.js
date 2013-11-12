@@ -43,8 +43,10 @@ function($scope, $location, $rootScope, $http){
     } else if (ret.code === "ADDING"){
       $scope.isAdding = true;
       $scope.addingName = ret.data;
-    } else {
+    } else if (ret.code === "IN-RELATION"){
       $scope.isInRelation = true;
+      $rootScope.userName = ret.data.userName;
+      $scope.theOneName = ret.data.theOneName;
     }
   });
 
@@ -85,7 +87,7 @@ function($scope, $location, $rootScope, $http){
       $scope.disableAddButton = true;
       if (data.code === "NO-RELATION"){
         $scope.disableAddButton = false;
-        $scope.theOneName = name;
+        $scope.theOneNameAdd = name;
       }
     });
   };
@@ -95,34 +97,42 @@ function($scope, $location, $rootScope, $http){
     postObj.code = "ADD-THE-ONE";
     postObj.data = {};
     postObj.data.initiator = $rootScope.userName;
-    postObj.data.reciever = $scope.theOneName;
+    postObj.data.reciever = $scope.theOneNameAdd;
 
     $http.post('/app', postObj).success(function(data, status, headers, config) {
 
     });
   };
 
-  $scope.agreeTheOne = function(req){
+  $scope.agreeTheOne = function(name){
     var postObj = {};
+    postObj.code = "AGREE-THE-ONE";
+    postObj.data = {};
+    postObj.data.initiator = name;
+    postObj.data.reciever = $rootScope.userName;
 
-    if (req.code === "ADD-THE-ONE"){
-      postObj.code = "AGREE-THE-ONE";
-      postObj.data = {};
-      postObj.data.initiator = name;
-      postObj.data.reciever = $rootScope.userName;
-      $http.post('/app', postObj).success(function(data, status, headers, config) {
-        if (data.code === true){
-          alert("add the one succ!");
-        }
-      });
-    }
-
-
+    $http.post('/app', postObj).success(function(data, status, headers, config) {
+      if (data.code === true){
+        alert("add the one succ!");
+      }
+    });
   };
 
   $scope.cancelAdd = function(){
     var postObj = {};
     postObj.code = "CANCEL-ADD";
+    $http.post('/app', postObj).success(function(data, status, headers, config) {
+      if (data.code === true){
+        $scope.isNoRelation = true;
+        $scope.isAdding = false;
+        $scope.isInRelation = false;
+      }
+    });
+  };
+
+  $scope.dismissTheOne = function(){
+    var postObj = {};
+    postObj.code = "DISMISS-THE-ONE";
     $http.post('/app', postObj).success(function(data, status, headers, config) {
       if (data.code === true){
         $scope.isNoRelation = true;

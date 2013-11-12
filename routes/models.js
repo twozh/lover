@@ -20,7 +20,7 @@ var User = mongoose.model('User', mongoose.Schema({
 
   //control info
   inRelation: {type: String, required:true, default: "NO-RELATION"}, //NO-RELATION, ADDING, IN-RELATION
-  addingName: String,
+  relationName: String,
   relation: {type: ObjectId, ref: 'Relation'},
   request: [{}],
 }));
@@ -75,15 +75,20 @@ exports.MsgFindAll = function(req, res){
       user.markModified('request');
       user.save();
 
+      res.send(GRETURN);
     } else if (user.inRelation  === "ADDING"){
       GRETURN.code = "ADDING";
-      GRETURN.data = user.addingName;
-    }
-    else {
-      GRETURN.code = "IN-RELATION";
-    }
+      GRETURN.data = user.relationName;
 
-    res.send(GRETURN);
+      res.send(GRETURN);
+    } else if (user.inRelation  === "IN-RELATION"){
+      GRETURN.code = "IN-RELATION";
+      GRETURN.data = {};
+      GRETURN.data.userName = user.name;
+      GRETURN.data.theOneName = user.relationName;
+
+      res.send(GRETURN);
+    }
   });
 
 /*
@@ -271,7 +276,7 @@ exports.appHandler = function(req, res){
         var t = {};
         t.code = "ADD-THE-ONE";
         t.data = reqData.data.initiator;
-        user.request.push(reqData.data.initiator);
+        user.request.push(t);
         user.markModified('request');
         user.save();
       });
@@ -280,7 +285,7 @@ exports.appHandler = function(req, res){
         if (err) console.log(err);
 
         user.inRelation = "ADDING";
-        user.addingName = reqData.data.reciever;
+        user.relationName = reqData.data.reciever;
         user.save();
         GRETURN.code = true;
         res.send(GRETURN);
@@ -291,14 +296,14 @@ exports.appHandler = function(req, res){
       User.findOne({name: reqData.data.reciever}, function(err, userR){
         User.findOne({name: reqData.data.initiator}, function(err, userI){
           userR.inRelation = "IN-RELATION";
-          userR.relation = userI._id;
+          userR.relationName = reqData.data.initiator;
           userR.save();
 
           userI.inRelation = "IN-RELATION";
-          userI.relation = userR._id;
           userI.save();
 
           GRETURN.code = true;
+          delete GRETURN.data;
           res.send(GRETURN);
         });
       });
@@ -308,7 +313,7 @@ exports.appHandler = function(req, res){
       User.findById(req.session.user_id, function(err, user){
         if (err) console.log(err);
 
-        User.findOne({name: user.addingName}, function(err, userR){
+        User.findOne({name: user.relationName}, function(err, userR){
           for (var i = 0; i < userR.request.length; i++){
             if (userR.request[i].code === "ADD-THE-ONE" &&
                 userR.request[i].data === user.name){
@@ -320,11 +325,27 @@ exports.appHandler = function(req, res){
         });
 
         user.inRelation = "NO-RELATION";
-        user.addingName = "";
+        user.relationName = "";
         user.save();
 
         GRETURN.code = true;
         res.send(GRETURN);
+      });
+      break;
+
+    case "DISMISS-THE-ONE":
+
+      User.findById(req.session.user_id, function(err, user){
+        User.findOne({name: user.relationName}, function(err, theOne){
+          user.inRelation = "NO-RELATION";
+          user.save();
+          theOne.inRelation = "NO-RELATION";
+          theOne.save();
+
+          GRETURN.code = true;
+          delete GRETURN.data;
+          res.send(GRETURN);
+        });
       });
       break;
   }
