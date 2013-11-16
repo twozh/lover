@@ -47,21 +47,27 @@ function($scope, $location, $rootScope, $http){
       $scope.isInRelation = true;
       $rootScope.userName = ret.data.userName;
       $scope.theOneName = ret.data.theOneName;
+
+      var postText  = {};
+      postText.code = "RETRIEVE-MSG";
+
+      $http.post('/app', postText).success(function(data, status, headers, config) {
+        if (data.code === true){
+          $scope.msgList = data.data;
+        }
+      });
     }
   });
 
 	$scope.createMsg = function(inText) {
     var postText     = {};
-    postText.message = inText;
-    postText.user_id = $scope.user_id;
+    postText.code = "POST-MSG";
+    postText.data = inText;
 
-    $http.post('/msgs', postText).success(function(data, status, headers, config) {
-      var idTmp = data.data.user_id;
-      data.data.user_id = {};
-      data.data.user_id.name = $scope.userName;
-      data.data.user_id._id = idTmp;
-      $scope.msgList.unshift(data.data);
-
+    $http.post('/app', postText).success(function(data, status, headers, config) {
+      if (data.code === true){
+        $scope.msgList.unshift(data.data);
+      }
       //clear input textarea
       $scope.inText = '';
     });
@@ -69,6 +75,7 @@ function($scope, $location, $rootScope, $http){
 
   $scope.delMsg = function(msg){
     //if msg's user is not the current logged in one, then return
+    /*
     if ($scope.user_id !== msg.user_id._id){
       return;
     }
@@ -76,6 +83,7 @@ function($scope, $location, $rootScope, $http){
     $http.delete('/msgs/' + msg._id).success(function(ret){
       $scope.msgList.delById(msg._id);
     });
+*/
   };
 
   $scope.findTheOne = function(name){
@@ -95,9 +103,7 @@ function($scope, $location, $rootScope, $http){
   $scope.addTheOne = function(){
     var postObj = {};
     postObj.code = "ADD-THE-ONE";
-    postObj.data = {};
-    postObj.data.initiator = $rootScope.userName;
-    postObj.data.reciever = $scope.theOneNameAdd;
+    postObj.data = $scope.theOneNameAdd;;
 
     $http.post('/app', postObj).success(function(data, status, headers, config) {
 
@@ -107,9 +113,7 @@ function($scope, $location, $rootScope, $http){
   $scope.agreeTheOne = function(name){
     var postObj = {};
     postObj.code = "AGREE-THE-ONE";
-    postObj.data = {};
-    postObj.data.initiator = name;
-    postObj.data.reciever = $rootScope.userName;
+    postObj.data = name;
 
     $http.post('/app', postObj).success(function(data, status, headers, config) {
       if (data.code === true){

@@ -4,12 +4,17 @@ var mongoose = require('mongoose');
 var ObjectId = mongoose.Schema.Types.ObjectId;
 var GRETURN = {};
 
+var debugLog = function(input){
+  console.log(input);
+};
+
 mongoose.connect("mongodb://localhost/lover");
 
 var Msg = mongoose.model('Msg', mongoose.Schema({
   message: String,
   time:  {type: Date, default: Date.now, required: true},
-  user_id: {type: ObjectId, ref: 'User', required: true},
+  user: {type: ObjectId, ref: 'User', required: true},
+  isnew: Boolean,
 }));
 
 var User = mongoose.model('User', mongoose.Schema({
@@ -21,16 +26,24 @@ var User = mongoose.model('User', mongoose.Schema({
   //control info
   inRelation: {type: String, required:true, default: "NO-RELATION"}, //NO-RELATION, ADDING, IN-RELATION
   relationName: String,
-  relation: {type: ObjectId, ref: 'Relation'},
   request: [{}],
+
+  msgList: {type: ObjectId, ref: 'MsgList'},
+
 }));
 
+var MsgList = mongoose.model("MsgList", mongoose.Schema({
+  msgs: [{type: ObjectId, ref: "Msg"}],
+}));
+
+/*
 var Relation = mongoose.model("Relation", mongoose.Schema({
   user1: {type: ObjectId, ref: 'User'},
   user2: {type: ObjectId, ref: 'User'},
   msgs: [{type: ObjectId, ref: 'Msg'}],
 
 }));
+*/
 
 
 /*
@@ -90,20 +103,6 @@ exports.MsgFindAll = function(req, res){
       res.send(GRETURN);
     }
   });
-
-/*
-  Msg.find()
-    .sort('-time')
-    .populate('user_id', 'name')
-    .exec(function(err, msgs){
-      if (err) console.log(err);
-
-      GRETURN.code = true;
-      GRETURN.data = msgs;
-
-      res.send(GRETURN);
-    });
-*/
 };
 
 exports.MsgFindById = function(req, res){
@@ -153,8 +152,6 @@ exports.MsgDelete = function(req, res){
     console.log('del succ');
     res.send(GRETURN);
   });
-  //console.log('del succ');
-  //res.send("del succ!");
 };
 
 /*
@@ -249,6 +246,7 @@ exports.getLoginUser = function(req, res){
   other logic
  */
 exports.appHandler = function(req, res){
+checkSession(req, res, function(sessionUser){
   var reqData = req.body;
 
   switch (reqData.code){
@@ -268,88 +266,137 @@ exports.appHandler = function(req, res){
       break;
 
     case "ADD-THE-ONE":
-      console.log("reciever: " + reqData.data.reciever);
-      console.log("initiator: " + reqData.data.initiator);
-      User.findOne({name: reqData.data.reciever}, function(err, user){
+      console.log("the target one name: " + reqData.data);
+      User.findOne({name: reqData.data}, function(err, targetUser){
         if (err) console.log(err);
 
-        var t = {};
-        t.code = "ADD-THE-ONE";
-        t.data = reqData.data.initiator;
-        user.request.push(t);
-        user.markModified('request');
-        user.save();
-      });
+        if(targetUser){
+          var t = {};
+          t.code = "ADD-THE-ONE";
+          t.data = sessionUser.name;
+          targetUser.request.push(t);
+          targetUser.markModified('request');
+          targetUser.save();
 
-      User.findOne({name: reqData.data.initiator}, function(err, user){
-        if (err) console.log(err);
-
-        user.inRelation = "ADDING";
-        user.relationName = reqData.data.reciever;
-        user.save();
-        GRETURN.code = true;
-        res.send(GRETURN);
+          sessionUser.inRelation = "ADDING";
+          sessionUser.relationName = reqData.data;
+          sessionUser.save();
+          GRETURN.code = true;
+          res.send(GRETURN);
+        }
       });
       break;
 
     case "AGREE-THE-ONE":
-      User.findOne({name: reqData.data.reciever}, function(err, userR){
-        User.findOne({name: reqData.data.initiator}, function(err, userI){
-          userR.inRelation = "IN-RELATION";
-          userR.relationName = reqData.data.initiator;
-          userR.save();
+      debugLog("the one name is " + reqData.data);
+      User.findOne({name: reqData.data}, function(err, initiator){
+        if (err) console.log(err);
 
-          userI.inRelation = "IN-RELATION";
-          userI.save();
+        if(initiator){
+          sessionUser.inRelation = "IN-RELATION";
+          sessionUser.relationName = reqData.data;
+          initiator.inRelation = "IN-RELATION";
 
-          GRETURN.code = true;
-          delete GRETURN.data;
-          res.send(GRETURN);
-        });
+          var msgList = new MsgList();
+          msgList.save(function(err){
+            initiator.msgList = msgList._id;
+            sessionUser.msgList = msgList._id;
+
+            sessionUser.save();
+            initiator.save();
+
+            GRETURN.code = true;
+            delete GRETURN.data;
+            res.send(GRETURN);
+          });
+        }
       });
       break;
 
     case "CANCEL-ADD":
-      User.findById(req.session.user_id, function(err, user){
-        if (err) console.log(err);
-
-        User.findOne({name: user.relationName}, function(err, userR){
-          for (var i = 0; i < userR.request.length; i++){
-            if (userR.request[i].code === "ADD-THE-ONE" &&
-                userR.request[i].data === user.name){
-              userR.request.splice(i, 1);
-            }
+      debugLog("CANCEL-ADD");
+      User.findOne({name: sessionUser.relationName}, function(err, targetUser){
+        for (var i = 0; i < targetUser.request.length; i++){
+          if (targetUser.request[i].code === "ADD-THE-ONE" &&
+              targetUser.request[i].data === sessionUser.name){
+            targetUser.request.splice(i, 1);
           }
+        }
 
-          userR.save();
+        targetUser.save();
+      });
+
+      sessionUser.inRelation = "NO-RELATION";
+      sessionUser.relationName = "";
+      sessionUser.save();
+
+      GRETURN.code = true;
+      res.send(GRETURN);
+      break;
+
+    case "DISMISS-THE-ONE":
+      debugLog("DISMISS-THE-ONE");
+      User.findOne({name: sessionUser.relationName}, function(err, theOne){
+        MsgList.findById(sessionUser.msgList)
+        .populate('msgs')
+        .exec(function(err, msgList){
+          for (var i = 0; i < msgList.msgs.length; i++){
+            msgList.msgs[i].remove(function(){
+              debugLog("remove msg OK");
+            });
+          }
+          msgList.remove(function(){
+            debugLog("remove msgList OK");
+          });
         });
 
-        user.inRelation = "NO-RELATION";
-        user.relationName = "";
-        user.save();
+        sessionUser.inRelation = "NO-RELATION";
+        sessionUser.msgList = null;
+        sessionUser.save();
+        theOne.inRelation = "NO-RELATION";
+        theOne.msgList = null;
+
+        theOne.save();
 
         GRETURN.code = true;
+        delete GRETURN.data;
         res.send(GRETURN);
       });
       break;
 
-    case "DISMISS-THE-ONE":
+    case "POST-MSG":
+      debugLog("POST-MSG: " + reqData.data);
+      User.findOne({name: sessionUser.relationName}, function(err, theOne){
+        MsgList.findById(sessionUser.msgList, function(err, msgList){
+          var msg = new Msg({message: reqData.data, user: sessionUser._id, isnew: true});
+          msg.save(function(err){
+            msgList.msgs.push(msg._id);
+            msgList.save();
 
-      User.findById(req.session.user_id, function(err, user){
-        User.findOne({name: user.relationName}, function(err, theOne){
-          user.inRelation = "NO-RELATION";
-          user.save();
-          theOne.inRelation = "NO-RELATION";
-          theOne.save();
-
-          GRETURN.code = true;
-          delete GRETURN.data;
-          res.send(GRETURN);
+            GRETURN.code = true;
+            GRETURN.data = msg;
+            res.send(GRETURN);
+          });
         });
+      });
+      break;
+
+    case "RETRIEVE-MSG":
+      MsgList.findById(sessionUser.msgList).populate('msgs').exec(function(err, msgList){
+        debugLog("RETRIEVE-MSG: " + msgList.msgs.length);
+        for (var i = 0; i < msgList.msgs.length; i++){
+          debugLog(msgList.msgs[i].message);
+          debugLog(msgList.msgs[i].user);
+        }
+
+        GRETURN.code = true;
+        GRETURN.data = msgList.msgs;
+        res.send(GRETURN);
       });
       break;
   }
 
+});
 };
 
 
