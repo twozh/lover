@@ -17,6 +17,10 @@ loverApp.config(['$routeProvider',
         templateUrl: 'an-partials/main.html',
         controller: 'loverMsgCtrl'
       }).
+      when('/user', {
+        templateUrl: 'an-partials/main.html',
+        controller: 'loverMsgCtrl'
+      }).
       when('/login', {
         templateUrl: 'an-partials/login.html',
         controller: 'loverLoginCtrl'

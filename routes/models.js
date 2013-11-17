@@ -5,15 +5,15 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 var GRETURN = {};
 
 var debugLog = function(input){
-  console.log(input);
+  //console.log(input);
 };
 
 mongoose.connect("mongodb://localhost/lover");
 
 var Msg = mongoose.model('Msg', mongoose.Schema({
-  message: String,
+  message: {type:String, required: true},
   time:  {type: Date, default: Date.now, required: true},
-  user: {type: ObjectId, ref: 'User', required: true},
+  userName: {type: String, required: true},
   isnew: Boolean,
 }));
 
@@ -29,22 +29,11 @@ var User = mongoose.model('User', mongoose.Schema({
   request: [{}],
 
   msgList: {type: ObjectId, ref: 'MsgList'},
-
 }));
 
 var MsgList = mongoose.model("MsgList", mongoose.Schema({
   msgs: [{type: ObjectId, ref: "Msg"}],
 }));
-
-/*
-var Relation = mongoose.model("Relation", mongoose.Schema({
-  user1: {type: ObjectId, ref: 'User'},
-  user2: {type: ObjectId, ref: 'User'},
-  msgs: [{type: ObjectId, ref: 'Msg'}],
-
-}));
-*/
-
 
 /*
   msg logic
@@ -54,7 +43,7 @@ var checkSession = function(req, res, succCb){
 
   if (user_id) {
     User.findById(user_id, function(err, user){
-      if (err) console.log(err);
+      if (err) debugLog(err);
 
       if (user){
         succCb(user);
@@ -73,7 +62,6 @@ var checkSession = function(req, res, succCb){
 };
 
 exports.MsgFindAll = function(req, res){
-
   checkSession(req, res, function(user){
     if (user.inRelation === "NO-RELATION"){
       GRETURN.code = "NO-RELATION";
@@ -105,55 +93,6 @@ exports.MsgFindAll = function(req, res){
   });
 };
 
-exports.MsgFindById = function(req, res){
-  var id = req.params.id;
-  console.log('Retrieving msgs: ' + id);
-
-  Msg.findById(id, function(err, msg){
-    if (err) console.log(err);
-
-    GRETURN.code = true;
-    GRETURN.data = msg;
-    res.send(GRETURN);
-  });
-};
-
-exports.MsgAdd = function(req, res){
-  var reqMsg = req.body;
-
-  var msg = Msg(reqMsg);
-  msg.save(function(err, msg){
-    if (err) console.log(err);
-      //Msg.findById(msg._id)
-      //  .populate(user_id)
-
-    GRETURN.code = true;
-    GRETURN.data = msg;
-    res.send(GRETURN);
-  });
-};
-
-exports.MsgPut = function(req, res){
-  var id = req.params.id;
-  var reqMsg = req.body;
-  Msg.findByIdAndUpdate(id, reqMsg, function(err, msg){
-    if (err) console.log(err);
-  });
-};
-
-exports.MsgDelete = function(req, res){
-  var id = req.params.id;
-  Msg.findByIdAndRemove(id, function(err, msg){
-    if (err) console.log(err);
-
-    GRETURN.code = true;
-    delete GRETURN.data;
-
-    console.log('del succ');
-    res.send(GRETURN);
-  });
-};
-
 /*
   user logic
  */
@@ -161,11 +100,11 @@ exports.loginCtrl = function(req, res){
   var postNameAndPass = req.body;
 
   User.findOne(postNameAndPass, function(err, user){
-    if (err) console.log(err);
+    if (err) debugLog(err);
 
     if (!user){
       GRETURN.code = false;
-      GRETURN.data = "user or passwd does not exist.";
+      GRETURN.data = "Username or password is not correct.";
       res.send(GRETURN);
       return;
     }
@@ -179,7 +118,7 @@ exports.loginCtrl = function(req, res){
 
 exports.logoutCtrl = function(req, res){
   delete req.session.user_id;
-  console.log("log out");
+  debugLog("log out");
 
   GRETURN.code = true;
   delete GRETURN.data;
@@ -199,12 +138,12 @@ exports.registerCtrl = function(req, res){
   }
 
   User.findOne({name: postLogInfo.name}, function(err, user){
-    if (err) console.log(err);
+    if (err) debugLog(err);
 
     //user already exist.
     if (user){
       GRETURN.code = false;
-      GRETURN.data = "username already exist.";
+      GRETURN.data = "Username already exist.";
       res.send(GRETURN);
       return;
     }
@@ -212,7 +151,7 @@ exports.registerCtrl = function(req, res){
     //user dose not exist
     var userNew = new User(postLogInfo);
     userNew.save(function(err, result){
-      if (err) console.log(err);
+      if (err) debugLog(err);
 
       GRETURN.code = true;
       GRETURN.data = "register success!";
@@ -226,7 +165,7 @@ exports.getLoginUser = function(req, res){
 
   if (user_id) {
     User.findById(user_id, function(err, user){
-      if (err) console.log(err);
+      if (err) debugLog(err);
 
       GRETURN.code      = true;
       GRETURN.data      = {};
@@ -243,16 +182,16 @@ exports.getLoginUser = function(req, res){
 };
 
 /*
-  other logic
+  app logic
  */
 exports.appHandler = function(req, res){
+
 checkSession(req, res, function(sessionUser){
   var reqData = req.body;
-
   switch (reqData.code){
     case "SEARCH-THE-ONE":
       User.findOne({name: reqData.data}, function(err, user){
-        if (err) console.log(err);
+        if (err) debugLog(err);
 
         if (user){
           GRETURN.code = user.inRelation;
@@ -266,9 +205,9 @@ checkSession(req, res, function(sessionUser){
       break;
 
     case "ADD-THE-ONE":
-      console.log("the target one name: " + reqData.data);
+      debugLog("the target one name: " + reqData.data);
       User.findOne({name: reqData.data}, function(err, targetUser){
-        if (err) console.log(err);
+        if (err) debugLog(err);
 
         if(targetUser){
           var t = {};
@@ -290,7 +229,7 @@ checkSession(req, res, function(sessionUser){
     case "AGREE-THE-ONE":
       debugLog("the one name is " + reqData.data);
       User.findOne({name: reqData.data}, function(err, initiator){
-        if (err) console.log(err);
+        if (err) debugLog(err);
 
         if(initiator){
           sessionUser.inRelation = "IN-RELATION";
@@ -341,9 +280,7 @@ checkSession(req, res, function(sessionUser){
         .populate('msgs')
         .exec(function(err, msgList){
           for (var i = 0; i < msgList.msgs.length; i++){
-            msgList.msgs[i].remove(function(){
-              debugLog("remove msg OK");
-            });
+            msgList.msgs[i].remove();
           }
           msgList.remove(function(){
             debugLog("remove msgList OK");
@@ -368,8 +305,10 @@ checkSession(req, res, function(sessionUser){
       debugLog("POST-MSG: " + reqData.data);
       User.findOne({name: sessionUser.relationName}, function(err, theOne){
         MsgList.findById(sessionUser.msgList, function(err, msgList){
-          var msg = new Msg({message: reqData.data, user: sessionUser._id, isnew: true});
+          var msg = new Msg({message: reqData.data, userName: sessionUser.name, isnew: true});
           msg.save(function(err){
+            debugLog(err);
+
             msgList.msgs.push(msg._id);
             msgList.save();
 
@@ -382,15 +321,20 @@ checkSession(req, res, function(sessionUser){
       break;
 
     case "RETRIEVE-MSG":
+      debugLog("RETRIEVE-MSG");
       MsgList.findById(sessionUser.msgList).populate('msgs').exec(function(err, msgList){
         debugLog("RETRIEVE-MSG: " + msgList.msgs.length);
-        for (var i = 0; i < msgList.msgs.length; i++){
-          debugLog(msgList.msgs[i].message);
-          debugLog(msgList.msgs[i].user);
+        var l = 0;
+        if (msgList.msgs.length > 10){
+          l = msgList.msgs.length - 10;
         }
 
         GRETURN.code = true;
-        GRETURN.data = msgList.msgs;
+        GRETURN.data = [];
+        for (var i = msgList.msgs.length - 1; i >= l; i--){
+          GRETURN.data.push(msgList.msgs[i]);
+        }
+
         res.send(GRETURN);
       });
       break;

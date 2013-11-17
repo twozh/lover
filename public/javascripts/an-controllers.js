@@ -28,8 +28,6 @@ function($scope, $location, $rootScope, $http){
   $scope.disableAddButton = true;
 
   $http.get('/msgs').success(function(ret){
-    alert(ret.code);
-
     if (ret.code === "NOT-LOGIN"){
       $location.path('/login');
     } else if (ret.code === "NO-RELATION"){
@@ -94,8 +92,11 @@ function($scope, $location, $rootScope, $http){
       $scope.addResult = data.code;
       $scope.disableAddButton = true;
       if (data.code === "NO-RELATION"){
+        $scope.addResult = "用户存在，可以向其发出配对请求";
         $scope.disableAddButton = false;
         $scope.theOneNameAdd = name;
+      } else {
+        $scope.addResult = "用户不存在或已配对";
       }
     });
   };
@@ -103,10 +104,12 @@ function($scope, $location, $rootScope, $http){
   $scope.addTheOne = function(){
     var postObj = {};
     postObj.code = "ADD-THE-ONE";
-    postObj.data = $scope.theOneNameAdd;;
-
+    postObj.data = $scope.theOneNameAdd;
+    $scope.theOneNameInput = "";
     $http.post('/app', postObj).success(function(data, status, headers, config) {
-
+      if (data.code === true){
+        $location.path('/user');
+      }
     });
   };
 
@@ -117,7 +120,8 @@ function($scope, $location, $rootScope, $http){
 
     $http.post('/app', postObj).success(function(data, status, headers, config) {
       if (data.code === true){
-        alert("add the one succ!");
+        alert("配对成功!");
+        $location.path('/user');
       }
     });
   };

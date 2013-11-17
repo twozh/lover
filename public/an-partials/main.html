@@ -1,78 +1,68 @@
-
-<div class="row">
-	<div class="col-md-2">
-    <span class="glyphicon glyphicon-user"></span>  {{userName}}
-    <br>
-    <br>
-    <br>
-
-		<div ng-show="isInRelation">
-			<span class="glyphicon glyphicon-user"></span>  {{theOneName}}
-	    <br>
-			<button class="btn btn-default btn-primary" ng-click="dismissTheOne()">
-			Dismiss</button>
-		</div>
-
-	</div>
-
-	<div class="col-md-10">
-
-		<div ng-show="isNoRelation">
-
-			<div class="form-group" >
-				<p>You have {{msgNum}} request.</p>
-				<div ng-repeat="req in reqList">
-					<p>{{req.code}}, {{req.data}}</p>
-					<button type="button" class="btn btn-default btn-primary"
-					ng-click="agreeTheOne(req.data)">Agree</button>
-				</div>
-
-				<p>You havn't add the one.</p>
-				<p>Please input the one's name:</p>
-	      <input type="text" name='name' class="form-control"
-	      ng-model='theOneNameInput' autofocus required>
-	      <span class="help-block">{{addResult}}</span>
-	    </div>
-	    <div class="form-group">
-	    	<button type="submit" class="btn btn-default btn-primary" ng-click="findTheOne(theOneNameInput)">
-	    	Search</button>
-	    	<button type="button" class="btn btn-default btn-primary" ng-click="addTheOne()"
-	    	ng-disabled="disableAddButton">Add</button>
-	    </div>
-		</div>
-
-		<div ng-show="isAdding">
-
-			<p>You are adding {{addingName}}, wait her/his approval.</p>
-			<button type="button" class="btn btn-default btn-primary" ng-click="cancelAdd()">
-			Cancel</button>
-		</div>
-
-		<div ng-show="isInRelation">
-
-			<form name="msgForm">
-				<div class="form-group">
-					<textarea class="form-control" rows="3" ng-model='inText' placeholder="Say to your lover..." required>
-					</textarea>
-				</div>
-				<div class="form-group">
-					<button ng-disabled="msgForm.$invalid" type="button" class="btn btn-default"
-					ng-click="createMsg(inText)">Send</button>
-				</div>
-			</form>
-
-
-			<div class="msg-all" ng-repeat="msg in msgList">
-				<img width="35" height="35" src="images/photo5050.jpg" class="msg-img">
-				<div class="msg-body" ng-dblclick="delMsg(msg)">
-					<strong class="msg-user">{{msg.user_id.name}}</strong>
-					<p class="msg-text">{{msg.message}}</p>
-					<div class="msg-footer">{{msg.time | msgTime}}</div>
-				</div>
-			</div>
-
-		</div>
-
-
-	</div>
+<div>
+	<p>Welcom <span class="glyphicon glyphicon-user"><strong>{{userName}}</strong></span>,
+	<span ng-show="isInRelation">you are in relationship with </span>
+	<span ng-show="isInRelation" class="glyphicon glyphicon-user"><strong>{{theOneName}}
+	</strong></span></p>
 </div>
+
+<button ng-show="isInRelation" ng-click="dismissTheOne()" type="button"
+class="btn btn-danger btn-sm">Dismiss</button>
+
+<hr>
+
+<div ng-show="msgNum">
+	<p>你有{{msgNum}}个配对请求：</p>
+	<div ng-repeat="req in reqList">
+		<p>
+		<strong>{{req.data}} </strong>
+		 <button type="button" class="btn btn-default btn-primary btn-sm"
+		ng-click="agreeTheOne(req.data)">Agree</button>
+		</p>
+	</div>
+	<hr>
+</div>
+
+<div ng-show="isNoRelation">
+
+	<div class="form-group" >
+		<label for="findTheOne">Find the one:</label>
+    <input type="text" name='name' class="form-control" id='findTheOne'
+    ng-model='theOneNameInput' autofocus required>
+  </div>
+  <p>{{addResult}}</p>
+  <div class="form-group">
+  	<button type="submit" class="btn btn-default btn-primary" ng-click="findTheOne(theOneNameInput)">
+  	Search</button>
+  	<button type="button" class="btn btn-default btn-primary" ng-click="addTheOne()"
+  	ng-disabled="disableAddButton">Add</button>
+  </div>
+</div>
+
+<div ng-show="isAdding">
+	<p>You are adding <strong>{{addingName}}</strong>, please wait her/his approval.</p>
+	<button type="button" class="btn btn-default btn-primary" ng-click="cancelAdd()">
+	Cancel</button>
+</div>
+
+<div ng-show="isInRelation">
+	<form name="msgForm">
+		<div class="form-group">
+			<textarea class="form-control" rows="3" ng-model='inText' placeholder="Say to your lover..." required>
+			</textarea>
+		</div>
+		<div class="form-group">
+			<button ng-disabled="msgForm.$invalid" type="button" class="btn btn-default"
+			ng-click="createMsg(inText)">Send</button>
+		</div>
+	</form>
+
+	<div class="msg-all" ng-repeat="msg in msgList">
+		<div class='msg-img'><strong>{{msg.userName}}: </strong></div>
+		<div class="msg-body">
+			<p class="msg-text">{{msg.message}}</p>
+			<div class="msg-footer">{{msg.time | msgTime}}</div>
+		</div>
+	</div>
+
+</div>
+

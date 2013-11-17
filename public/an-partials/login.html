@@ -5,19 +5,19 @@
 
   <div class="form-signin-body">
     <div class="form-group" ng-class="{'has-error': loginForm.name.$invalid}">
-      <label for="login_field">Username or Email</label>
+      <label for="login_field">Username</label>
       <input type="text" name='name' class="form-control" id="login_field"
       ng-model='username' ng-click="postRsp = ''" autofocus required>
-      <span ng-show="loginForm.name.$error.required" class="help-block">Required</span>
     </div>
 
     <div class="form-group" ng-class="{'has-error': loginForm.passwd.$invalid}">
       <label for="password">Password</label>
       <input type="password" name='passwd' class="form-control" id="password"
       ng-model='password' ng-click="postRsp = ''" required>
-      <span ng-show="loginForm.passwd.$error.required" class="help-block">Required</span>
-      <span class="help-block">{{postRsp}}</span>
     </div>
+
+    <p class="text-danger">{{postRsp}}</p>
+
 
     <button type="submit" class="btn btn-primary" ng-click='postLogin(username, password)'
     ng-disabled='loginForm.$invalid'>Sign in</button>

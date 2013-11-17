@@ -35,10 +35,6 @@ app.get('/users', user.list);
 
 // msg
 app.get('/msgs', model.MsgFindAll);
-app.get('/msgs/:id', model.MsgFindById);
-app.post('/msgs', model.MsgAdd);
-app.put('/msgs/:id', model.MsgPut);
-app.delete('/msgs/:id', model.MsgDelete);
 
 // user
 app.post('/login', model.loginCtrl);
